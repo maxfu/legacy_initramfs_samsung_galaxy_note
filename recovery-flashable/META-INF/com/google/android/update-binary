@@ -1,0 +1,36 @@
+#!/sbin/sh
+# arg 1 is recovery api version, generally 3.
+# arg 2 is the pipe fd, to the recovery binary.
+# communicate with it using the recovery api.
+# arg 3 is the zip file
+
+echo -n -e 'ui_print Welcome to MaxFour kernel...\n' > /proc/self/fd/$2
+echo -n -e 'ui_print\n' > /proc/self/fd/$2
+
+echo -n -e 'ui_print Preparing files...\n' > /proc/self/fd/$2
+echo -n -e 'ui_print\n' > /proc/self/fd/$2
+
+cd /tmp
+unzip -o "$3"
+
+if [ -f boot.img ]; then
+  echo -n -e 'ui_print Installing boot image...\n' > /proc/self/fd/$2
+  echo -n -e 'ui_print\n' > /proc/self/fd/$2
+  dd if=boot.img of=/dev/block/mmcblk0p9
+  echo -n -e 'ui_print Wiping old uci settings...\n' > /proc/self/fd/$2
+  echo -n -e 'ui_print\n' > /proc/self/fd/$2
+  mount /data
+  mount -o rw,remount /data
+  rm -rf /data/.maxfour
+  rm -rf /data/.adamkernel
+  umount /data
+fi
+
+if [ -f recovery.img ]; then
+  echo -n -e 'ui_print Installing recovery image...\n' > /proc/self/fd/$2
+  echo -n -e 'ui_print\n' > /proc/self/fd/$2
+  dd if=recovery.img of=/dev/block/mmcblk0p10
+fi
+
+echo -n -e 'ui_print Finished...\n' > /proc/self/fd/$2
+echo -n -e 'ui_print\n' > /proc/self/fd/$2
